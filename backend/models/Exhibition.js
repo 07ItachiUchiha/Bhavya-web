@@ -1,100 +1,60 @@
 const mongoose = require('mongoose');
 
-const ticketSchema = new mongoose.Schema({
-    type: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    price: {
-        type: Number,
-        required: true,
-        min: 0
-    },
-    description: String,
-    maxQuantity: {
-        type: Number,
-        default: 100
-    },
-    soldCount: {
-        type: Number,
-        default: 0
-    }
-});
-
 const exhibitionSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true,
-        trim: true
+        required: true
     },
     description: {
         type: String,
+        required: true
+    },
+    startDate: {
+        type: Date,
+        required: true
+    },
+    endDate: {
+        type: Date,
+        required: true
+    },
+    location: {
+        name: String,
+        address: String,
+        city: String,
+        coordinates: {
+            lat: Number,
+            lng: Number
+        }
+    },
+    category: {
+        type: String,
+        enum: ['art', 'technology', 'business', 'cultural', 'educational'],
         required: true
     },
     image: {
         type: String,
         required: true
     },
-    date: {
-        start: {
-            type: Date,
-            required: true
-        },
-        end: {
-            type: Date,
-            required: true
-        }
-    },
-    location: {
-        venue: {
-            type: String,
-            required: true
-        },
-        address: {
-            type: String,
-            required: true
-        },
-        city: {
-            type: String,
-            required: true
-        },
-        coordinates: {
-            lat: Number,
-            lng: Number
-        }
-    },
+    ticketTypes: [{
+        name: String,
+        description: String,
+        price: Number,
+        availableQuantity: Number,
+        validUntil: Date
+    }],
     organizer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    category: {
-        type: String,
-        required: true,
-        enum: ['technology', 'business', 'art', 'science', 'other']
-    },
-    tickets: [ticketSchema],
     status: {
         type: String,
-        enum: ['draft', 'published', 'cancelled', 'completed'],
-        default: 'draft'
+        enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],
+        default: 'upcoming'
     },
     featured: {
         type: Boolean,
         default: false
-    },
-    tags: [{
-        type: String,
-        trim: true
-    }],
-    capacity: {
-        type: Number,
-        required: true
-    },
-    registeredCount: {
-        type: Number,
-        default: 0
     }
 }, {
     timestamps: true

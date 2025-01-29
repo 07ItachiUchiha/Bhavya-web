@@ -6,21 +6,20 @@ const auth = async (req, res, next) => {
         const token = req.header('Authorization')?.replace('Bearer ', '');
         
         if (!token) {
-            throw new Error('Authentication required');
+            return res.status(401).json({ message: 'No auth token, access denied' });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findOne({ _id: decoded.id });
+        const user = await User.findById(decoded.userId).select('-password');
 
         if (!user) {
-            throw new Error('User not found');
+            return res.status(401).json({ message: 'User not found' });
         }
 
         req.user = user;
-        req.token = token;
         next();
     } catch (error) {
-        res.status(401).json({ message: 'Please authenticate' });
+        res.status(401).json({ message: 'Token is invalid' });
     }
 };
 

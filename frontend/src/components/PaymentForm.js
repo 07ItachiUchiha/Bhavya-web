@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { CardElement, useStripe, useElements } from '@stripe/stripe-js';
 import { useNotification } from '../context/NotificationContext';
 
 const PaymentForm = ({ amount, onSuccess, onError }) => {

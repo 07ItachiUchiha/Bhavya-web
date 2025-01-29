@@ -112,31 +112,40 @@ const ExhibitionList = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {exhibitions.map(exhibition => (
-                                <Link
+                                <div
                                     key={exhibition._id}
-                                    to={`/exhibitions/${exhibition._id}`}
                                     className="bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform hover:-translate-y-1"
                                 >
-                                    <img
-                                        src={exhibition.image}
-                                        alt={exhibition.title}
-                                        className="w-full h-48 object-cover"
-                                    />
-                                    <div className="p-4">
-                                        <h2 className="text-xl font-semibold">{exhibition.title}</h2>
-                                        <p className="text-gray-600 mt-1">
-                                            {new Date(exhibition.date.start).toLocaleDateString()}
-                                        </p>
-                                        <div className="flex justify-between items-center mt-4">
-                                            <span className="text-sm text-gray-500">
-                                                {exhibition.location.city}
-                                            </span>
-                                            <span className="px-3 py-1 bg-black text-white text-sm rounded-full">
-                                                From ₹{Math.min(...exhibition.tickets.map(t => t.price))}
-                                            </span>
+                                    <Link to={`/exhibitions/${exhibition._id}`}>
+                                        <img
+                                            src={exhibition.image}
+                                            alt={exhibition.title}
+                                            className="w-full h-48 object-cover"
+                                        />
+                                        <div className="p-4">
+                                            <h2 className="text-xl font-semibold">{exhibition.title}</h2>
+                                            <p className="text-gray-600 mt-1">
+                                                {new Date(exhibition.date.start).toLocaleDateString()}
+                                            </p>
+                                            <div className="flex justify-between items-center mt-4">
+                                                <span className="text-sm text-gray-500">
+                                                    {exhibition.location.city}
+                                                </span>
+                                                <span className="px-3 py-1 bg-black text-white text-sm rounded-full">
+                                                    From ₹{Math.min(...exhibition.tickets.map(t => t.price))}
+                                                </span>
+                                            </div>
                                         </div>
+                                    </Link>
+                                    <div className="px-4 pb-4">
+                                        <Link
+                                            to={`/exhibitions/${exhibition._id}`}
+                                            className="block w-full bg-custom text-white text-center py-2 rounded-lg hover:bg-custom-dark transition-colors"
+                                        >
+                                            Book Now
+                                        </Link>
                                     </div>
-                                </Link>
+                                </div>
                             ))}
                         </div>
                     )}

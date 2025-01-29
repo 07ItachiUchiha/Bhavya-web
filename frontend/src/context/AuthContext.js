@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -14,50 +15,59 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const login = async (email, password) => {
+    useEffect(() => {
+        const initAuth = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await authAPI.verifyToken();
+                    setUser(response.data);
+                } catch (error) {
+                    localStorage.removeItem('token');
+                }
+            }
+            setLoading(false);
+        };
+        initAuth();
+    }, []);
+
+    const login = async (credentials) => {
         try {
-            // Here you would typically make an API call to your backend
-            // For now, we'll simulate a successful login
-            const userData = { id: 1, email, name: 'User' };
-            setUser(userData);
-            localStorage.setItem('user', JSON.stringify(userData));
+            const response = await authAPI.login(credentials);
+            const { token, user } = response.data;
+            localStorage.setItem('token', token);
+            setUser(user);
             return { success: true };
         } catch (error) {
-            return { success: false, error: error.message };
+            return { 
+                success: false, 
+                error: error.response?.data?.message || 'Login failed' 
+            };
+        }
+    };
+
+    const register = async (userData) => {
+        try {
+            const response = await authAPI.register(userData);
+            const { token, user } = response.data;
+            localStorage.setItem('token', token);
+            setUser(user);
+            return { success: true };
+        } catch (error) {
+            return { 
+                success: false, 
+                error: error.response?.data?.message || 'Registration failed' 
+            };
         }
     };
 
     const logout = () => {
+        localStorage.removeItem('token');
         setUser(null);
-        localStorage.removeItem('user');
-    };
-
-    const checkAuth = () => {
-        try {
-            const savedUser = localStorage.getItem('user');
-            if (savedUser) {
-                setUser(JSON.parse(savedUser));
-            }
-        } catch (error) {
-            console.error('Error checking auth:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    React.useEffect(() => {
-        checkAuth();
-    }, []);
-
-    const value = {
-        user,
-        login,
-        logout,
-        loading
     };
 
     return (
-        <AuthContext.Provider value={value}>
+        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
             {!loading && children}
         </AuthContext.Provider>
     );
