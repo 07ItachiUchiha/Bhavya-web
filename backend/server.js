@@ -1,78 +1,101 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const http = require('http');
-const socketIo = require('socket.io');
 require('dotenv').config();
-
-const authRoutes = require('./routes/auth.routes');
-const eventRoutes = require('./routes/event.routes');
-const bookingRoutes = require('./routes/booking.routes');
-const ticketRoutes = require('./routes/tickets');
+const express = require('express');
+const cors = require('cors');
+const connectDB = require('./config/db');
+const errorHandler = require('./middleware/errorHandler');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
-});
 
 // Middleware
-app.use(cors());
 app.use(express.json());
+app.use(cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-// Database connection
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('Could not connect to MongoDB:', err));
+// Health check
+app.get('/health', (_, res) => {
+    res.json({ 
+        status: 'ok', 
+        server: 'running',
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Add this before your routes
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`, {
+        query: req.query,
+        body: req.body
+    });
+    next();
+});
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/tickets', ticketRoutes);
+const loadRoutes = () => {
+    // Essential routes that must exist
+    app.use('/api/auth', require('./routes/authRoutes'));
+    app.use('/api/admin', require('./routes/adminRoutes'));
 
-// Socket.IO connection
-io.on('connection', (socket) => {
-    console.log('New client connected');
-    
-    socket.on('floorPlanUpdate', (data) => {
-        socket.broadcast.emit('floorPlanUpdate', data);
+    // Optional routes with graceful fallback
+    const optionalRoutes = [
+        { path: '/api/events', module: './routes/eventRoutes' },
+        { path: '/api/tickets', module: './routes/ticketRoutes' },
+        { path: '/api/payments', module: './routes/paymentRoutes' },
+        { path: '/api/profile', module: './routes/profileRoutes' }
+    ];
+
+    optionalRoutes.forEach(route => {
+        try {
+            const routeModule = require(route.module);
+            app.use(route.path, routeModule);
+        } catch (error) {
+            console.warn(`Route ${route.path} is not available:`, error.message);
+        }
     });
+};
 
-    socket.on('disconnect', () => {
-        console.log('Client disconnected');
-    });
+// Use the function in your server setup
+try {
+    loadRoutes();
+} catch (error) {
+    console.error('Error loading routes:', error);
+}
+
+// Error handling middleware (should be after routes)
+app.use(errorHandler);
+
+// 404 handler (should be after routes but before error handler)
+app.use((req, res, next) => {
+    const error = new Error('Route not found');
+    error.status = 404;
+    next(error);
 });
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: 'Something went wrong!' });
-});
-
-// Handle 404 routes
-app.use((req, res) => {
-    res.status(404).json({ message: 'Route not found' });
-});
-
-const PORT = process.env.PORT || 5000;
 
 // Start server
-server.listen(PORT, (err) => {
-    if (err) {
-        if (err.code === 'EADDRINUSE') {
-            console.error(`Port ${PORT} is already in use. Please use a different port.`);
-            process.exit(1);
-        } else {
-            console.error('Error starting server:', err);
-            process.exit(1);
-        }
+const startServer = async () => {
+    try {
+        await connectDB();
+        const PORT = process.env.PORT || 5000;
+        
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+            console.log(`MongoDB connected`);
+            console.log(`CORS enabled for origin: ${process.env.CORS_ORIGIN}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
     }
-    console.log(`Server running on port ${PORT}`);
-}); 
+};
+
+// Add this after your dotenv config to verify
+console.log('Environment Check:', {
+    NODE_ENV: process.env.NODE_ENV,
+    CLOUDINARY_CONFIGURED: !!process.env.CLOUDINARY_CLOUD_NAME
+});
+
+startServer(); 

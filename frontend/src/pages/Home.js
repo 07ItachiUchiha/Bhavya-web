@@ -1,10 +1,74 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
+import { useAuth } from '../context/AuthContext';
+import LoginPrompt from '../components/LoginPrompt';
+import { useNotification } from '../context/NotificationContext';
+import api from '../services/api';
 const Home = () => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+    const { showNotification } = useNotification();
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const [ setFeaturedEvents] = useState({
+        exhibitions: [],
+        conferences: [],
+        highlights: [],
+        upcoming: []
+    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        // Show login prompt after 2 seconds if user is not logged in
+        if (!user) {
+            const timer = setTimeout(() => {
+                setShowLoginPrompt(true);
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+        fetchFeaturedEvents();
+    }, [user]);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
+    const handleAuthAction = () => {
+        if (user) {
+            handleLogout();
+        } else {
+            navigate('/login');
+        }
+    };
+
+    const handleBooking = () => {
+        if (!user) {
+            showNotification('Please login to book tickets', 'info');
+            navigate('/login');
+            return;
+        }
+        navigate('/tickets');
+    };
+
+    const fetchFeaturedEvents = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/events/featured');
+            if (response.data.success) {
+                setFeaturedEvents(response.data.featured);
+            }
+        } catch (error) {
+            console.error('Error fetching featured events:', error);
+            setError('Failed to load featured events');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const featuredExhibitions = [
         {
             id: 1,
@@ -12,7 +76,7 @@ const Home = () => {
             description: 'Annual technology conference',
             date: 'Dec 15-20, 2024',
             location: 'San Francisco, CA',
-            image: 'https://source.unsplash.com/800x400/?technology,exhibition'
+            image: 'https://picsum.photos/200/300'
         },
         {
             id: 2,
@@ -20,7 +84,7 @@ const Home = () => {
             description: 'Standard entry ticket',
             date: 'Jan 5-10, 2025',
             location: 'Mumbai, India',
-            image: 'https://source.unsplash.com/800x400/?india,technology'
+            image: 'https://picsum.photos/200/300'
         }
     ];
 
@@ -45,33 +109,8 @@ const Home = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Mobile Navigation */}
-            <nav className="fixed top-0 w-full bg-white shadow-sm z-50 md:hidden">
-                <div className="px-4 py-3 flex justify-between items-center">
-                    <h1 className="font-['Pacifico'] text-2xl text-custom">Exhibition Hub</h1>
-                    <button className="text-gray-600 md:hidden">
-                        <i className="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
-            </nav>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:block fixed top-0 w-full bg-white shadow-sm z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <h1 className="font-['Pacifico'] text-2xl text-custom">Exhibition Hub</h1>
-                        <div className="hidden md:flex space-x-8">
-                            <Link to="/" className="text-black">Home</Link>
-                            <Link to="/events" className="text-gray-600 hover:text-black">Exhibitions</Link>
-                            <Link to="/tickets" className="text-gray-600 hover:text-black">Tickets</Link>
-                            <Link to="/profile" className="text-gray-600 hover:text-black">Profile</Link>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
             {/* Main Content */}
-            <div className="pt-14 md:pt-16">
+            <div className="pt-4">
                 {/* Hero Slider */}
                 <div className="relative">
                     <Slider {...sliderSettings}>
@@ -101,7 +140,7 @@ const Home = () => {
                         <h2 className="text-xl md:text-2xl font-semibold mb-6">Featured Exhibitions</h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                             {featuredExhibitions.map((exhibition) => (
-                                <div key={exhibition.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+                                <div key={exhibition.id} className="bg-white rounded-lg shadow hover:shadow-lg transition">
                                     <img 
                                         src={exhibition.image} 
                                         alt={exhibition.title}
@@ -117,12 +156,12 @@ const Home = () => {
                                             >
                                                 Learn More
                                             </Link>
-                                            <Link 
-                                                to={`/events/${exhibition.id}/book`}
+                                            <button 
+                                                onClick={handleBooking}
                                                 className="text-sm bg-black text-white px-3 py-1 rounded-lg hover:bg-gray-800"
                                             >
                                                 Book Now
-                                            </Link>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -132,27 +171,10 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Mobile Bottom Navigation */}
-            <nav className="fixed bottom-0 w-full bg-white border-t md:hidden">
-                <div className="grid grid-cols-4 gap-1 px-2 py-2">
-                    <Link to="/" className="flex flex-col items-center justify-center">
-                        <i className="fas fa-home text-custom text-xl"></i>
-                        <span className="text-xs mt-1 text-custom">Home</span>
-                    </Link>
-                    <Link to="/events" className="flex flex-col items-center justify-center">
-                        <i className="fas fa-calendar text-gray-400 text-xl"></i>
-                        <span className="text-xs mt-1 text-gray-500">Exhibitions</span>
-                    </Link>
-                    <Link to="/tickets" className="flex flex-col items-center justify-center">
-                        <i className="fas fa-ticket-alt text-gray-400 text-xl"></i>
-                        <span className="text-xs mt-1 text-gray-500">Tickets</span>
-                    </Link>
-                    <Link to="/profile" className="flex flex-col items-center justify-center">
-                        <i className="fas fa-user text-gray-400 text-xl"></i>
-                        <span className="text-xs mt-1 text-gray-500">Profile</span>
-                    </Link>
-                </div>
-            </nav>
+            <LoginPrompt 
+                open={showLoginPrompt} 
+                onClose={() => setShowLoginPrompt(false)} 
+            />
         </div>
     );
 };

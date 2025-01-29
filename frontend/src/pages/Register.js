@@ -1,119 +1,221 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { 
+    Container, 
+    Paper, 
+    TextField, 
+    Button, 
+    Typography, 
+    Box,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
+    FormControl,
+    FormLabel,
+    Divider
+} from '@mui/material';
+import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const Register = () => {
+    const navigate = useNavigate();
+    const { register } = useAuth();
+    const { showNotification } = useNotification();
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        mobile: '',
         password: '',
-        role: 'attendee'
+        confirmPassword: '',
+        userType: 'visitor', // default to visitor
+        organizationName: '', // for exhibitors only
+        organizationDetails: '' // for exhibitors only
     });
 
-    const handleSubmit = (e) => {
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const validateForm = () => {
+        if (!formData.name || !formData.email || !formData.mobile || !formData.password) {
+            showNotification('Please fill in all required fields', 'error');
+            return false;
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+            showNotification('Passwords do not match', 'error');
+            return false;
+        }
+
+        if (formData.mobile.length !== 10 || !/^\d+$/.test(formData.mobile)) {
+            showNotification('Please enter a valid 10-digit mobile number', 'error');
+            return false;
+        }
+
+        if (formData.userType === 'exhibitor' && !formData.organizationName) {
+            showNotification('Organization name is required for exhibitors', 'error');
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Registration data:', formData);
+        
+        if (!validateForm()) return;
+
+        setLoading(true);
+        try {
+            const result = await register(formData);
+            if (result.success) {
+                showNotification('Registration successful!', 'success');
+                navigate('/');
+            } else {
+                showNotification(result.error, 'error');
+            }
+        } catch (error) {
+            showNotification('Registration failed. Please try again.', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Top Navigation */}
-            <nav className="fixed top-0 w-full bg-white shadow-sm z-50">
-                <div className="px-4 py-3 flex justify-between items-center">
-                    <Link to="/" className="!rounded-button p-2">
-                        <i className="fas fa-arrow-left text-gray-700"></i>
-                    </Link>
-                    <h1 className="flex-1 text-center text-lg font-semibold">Register</h1>
-                    <div className="w-10"></div>
-                </div>
-            </nav>
-
-            {/* Main Content */}
-            <div className="pt-14 px-4">
-                <div className="mt-8">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Full Name</label>
-                            <input
-                                type="text"
-                                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-black"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="Enter your full name"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Email</label>
-                            <input
-                                type="email"
-                                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-black"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                placeholder="Enter your email"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Password</label>
-                            <input
-                                type="password"
-                                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-black"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                placeholder="Create a password"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Role</label>
-                            <select
-                                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-black"
-                                value={formData.role}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                            >
-                                <option value="attendee">Attendee</option>
-                                <option value="organizer">Organizer</option>
-                                <option value="exhibitor">Exhibitor</option>
-                            </select>
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition-colors"
+        <Container maxWidth="sm" sx={{ py: 8 }}>
+            <Paper elevation={3} sx={{ p: 4 }}>
+                <Typography variant="h5" align="center" gutterBottom>
+                    Create Account
+                </Typography>
+                <form onSubmit={handleSubmit}>
+                    <FormControl component="fieldset" sx={{ mb: 3, width: '100%' }}>
+                        <FormLabel component="legend">Register as</FormLabel>
+                        <RadioGroup
+                            row
+                            name="userType"
+                            value={formData.userType}
+                            onChange={handleChange}
                         >
-                            Register
-                        </button>
-                    </form>
+                            <FormControlLabel 
+                                value="visitor" 
+                                control={<Radio />} 
+                                label="Visitor" 
+                            />
+                            <FormControlLabel 
+                                value="exhibitor" 
+                                control={<Radio />} 
+                                label="Exhibitor" 
+                            />
+                        </RadioGroup>
+                    </FormControl>
 
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            Already have an account?{' '}
-                            <Link to="/login" className="text-blue-600 hover:text-blue-800">
-                                Login
-                            </Link>
-                        </p>
-                    </div>
-                </div>
-            </div>
+                    <TextField
+                        fullWidth
+                        label="Full Name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        margin="normal"
+                        required
+                    />
+                    <TextField
+                        fullWidth
+                        label="Email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        margin="normal"
+                        required
+                    />
+                    <TextField
+                        fullWidth
+                        label="Mobile Number"
+                        name="mobile"
+                        value={formData.mobile}
+                        onChange={handleChange}
+                        margin="normal"
+                        required
+                        inputProps={{ 
+                            maxLength: 10,
+                            pattern: "[0-9]*"
+                        }}
+                        helperText="Enter 10-digit mobile number"
+                    />
 
-            {/* Bottom Navigation */}
-            <nav className="fixed bottom-0 w-full bg-white border-t">
-                <div className="grid grid-cols-4 gap-1 px-2 py-2">
-                    <Link to="/" className="flex flex-col items-center justify-center">
-                        <i className="fas fa-home text-gray-400 text-xl"></i>
-                        <span className="text-xs mt-1 text-gray-500">Home</span>
-                    </Link>
-                    <Link to="/events" className="flex flex-col items-center justify-center">
-                        <i className="fas fa-calendar text-gray-400 text-xl"></i>
-                        <span className="text-xs mt-1 text-gray-500">Exhibitions</span>
-                    </Link>
-                    <Link to="/products" className="flex flex-col items-center justify-center">
-                        <i className="fas fa-box text-gray-400 text-xl"></i>
-                        <span className="text-xs mt-1 text-gray-500">Products</span>
-                    </Link>
-                    <Link to="/profile" className="flex flex-col items-center justify-center">
-                        <i className="fas fa-user text-custom text-xl"></i>
-                        <span className="text-xs mt-1 text-custom">Profile</span>
-                    </Link>
-                </div>
-            </nav>
-        </div>
+                    {formData.userType === 'exhibitor' && (
+                        <>
+                            <TextField
+                                fullWidth
+                                label="Organization Name"
+                                name="organizationName"
+                                value={formData.organizationName}
+                                onChange={handleChange}
+                                margin="normal"
+                                required
+                            />
+                            <TextField
+                                fullWidth
+                                label="Organization Details"
+                                name="organizationDetails"
+                                value={formData.organizationDetails}
+                                onChange={handleChange}
+                                margin="normal"
+                                multiline
+                                rows={3}
+                            />
+                        </>
+                    )}
+
+                    <TextField
+                        fullWidth
+                        label="Password"
+                        name="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        margin="normal"
+                        required
+                    />
+                    <TextField
+                        fullWidth
+                        label="Confirm Password"
+                        name="confirmPassword"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        margin="normal"
+                        required
+                    />
+
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        size="large"
+                        disabled={loading}
+                        sx={{ mt: 3 }}
+                    >
+                        {loading ? 'Creating Account...' : 'Sign Up'}
+                    </Button>
+                </form>
+
+                <Divider sx={{ my: 3 }} />
+                
+                <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="body2">
+                        Already have an account?{' '}
+                        <Link to="/login" style={{ color: 'primary.main' }}>
+                            Login
+                        </Link>
+                    </Typography>
+                </Box>
+            </Paper>
+        </Container>
     );
 };
 
