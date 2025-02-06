@@ -25,6 +25,7 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
+        console.error('Request error:', error);
         return Promise.reject(error);
     }
 );
@@ -48,7 +49,13 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
     (response) => {
-        console.log('API Response:', response.data);
+        // Ensure response has a success flag
+        if (typeof response.data === 'object' && !response.data.hasOwnProperty('success')) {
+            response.data = {
+                success: true,
+                ...response.data
+            };
+        }
         return response;
     },
     (error) => {
@@ -61,19 +68,25 @@ api.interceptors.response.use(
                 localStorage.removeItem('token');
                 window.location.href = '/login';
             }
-        } else if (error.code === 'ERR_NETWORK') {
-            console.error('Network error - Is the backend server running?');
-            console.error('Server URL:', process.env.REACT_APP_API_URL);
-        } else if (error.response) {
-            console.error('Response error:', error.response.data);
-        } else {
-            console.error('Error:', error);
         }
+
+        // Format error response
+        const errorResponse = {
+            success: false,
+            message: error.response?.data?.message || error.message || 'An error occurred',
+            error: error.response?.data?.error || error.message
+        };
+
+        // Log error details
         console.error('API Error:', {
-            message: error.message,
-            response: error.response?.data
+            url: error.config?.url,
+            method: error.config?.method,
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
         });
-        return Promise.reject(error);
+
+        return Promise.reject(errorResponse);
     }
 );
 

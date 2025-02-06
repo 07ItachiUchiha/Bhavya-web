@@ -17,13 +17,19 @@
     "drop-tickets": "node scripts/dropTickets.js",
     "clean": "node scripts/dropTickets.js",
     "start:dev": "npm run clean && npm run seed && npm run dev",
-    "verify-deps": "node scripts/verifyDependencies.js"
+    "verify-deps": "node scripts/verifyDependencies.js",
+    "test": "jest --detectOpenHandles",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:email": "jest email.test.js"
   },
   "keywords": [],
   "author": "Your Name",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
     "bcryptjs": "^2.4.3",
+    "bull": "^4.16.5",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -31,10 +37,14 @@
     "dotenv": "^16.3.1",
     "exceljs": "^4.4.0",
     "express": "^4.21.2",
-    "express-rate-limit": "^6.7.0",
+    "express-rate-limit": "^6.11.2",
     "express-validator": "^7.0.1",
+    "handlebars": "^4.7.8",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.8.6",
+    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^6.10.0",
@@ -42,10 +52,22 @@
     "razorpay": "^2.9.5",
     "recharts": "^2.15.0",
     "socket.io": "^4.7.2",
-    "stripe": "^14.10.0"
+    "stripe": "^14.10.0",
+    "validator": "^13.9.0",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "@bull-board/api": "^5.14.0",
+    "@bull-board/express": "^5.14.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "jest": "^29.5.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^6.3.3",
+    "@types/jest": "^29.5.0",
+    "jest-environment-node": "^29.5.0"
   },
-  "type": "commonjs"
+  "type": "commonjs",
+  "engines": {
+    "node": ">=14.0.0"
+  }
 }

@@ -50,7 +50,7 @@ const LoginPrompt = ({ open, onClose }) => {
             </DialogContent>
             <DialogActions sx={{ p: 2.5, pt: 0 }}>
                 <Button onClick={onClose} color="inherit">
-                    Maybe Later
+                    Visit Us
                 </Button>
                 <Button 
                     onClick={() => handleNavigation('/login')} 
@@ -64,7 +64,7 @@ const LoginPrompt = ({ open, onClose }) => {
                     variant="outlined"
                     color="primary"
                 >
-                    Sign Up
+                    Register
                 </Button>
             </DialogActions>
         </Dialog>

@@ -193,4 +193,53 @@ exports.getFeaturedEvents = async (req, res) => {
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
+};
+
+// Book an event
+exports.bookEvent = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const userId = req.user._id;
+
+        // Validate if event exists and is available
+        const event = await Event.findOne({
+            _id: eventId,
+            status: 'published',
+            startDate: { $gt: new Date() }
+        });
+
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event not found or not available for booking'
+            });
+        }
+
+        // Check if there's capacity available
+        if (event.capacity <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Event is fully booked'
+            });
+        }
+
+        // Create a booking (you'll need to implement this based on your booking model)
+        // This is a placeholder response
+        res.json({
+            success: true,
+            message: 'Event booked successfully',
+            bookingDetails: {
+                event: event._id,
+                user: userId,
+                status: 'pending'
+            }
+        });
+    } catch (error) {
+        console.error('Book event error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error booking event',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
 }; 

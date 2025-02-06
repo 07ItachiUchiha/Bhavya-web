@@ -35,7 +35,7 @@ const Header = () => {
                 <div className="px-4 py-3">
                     <div className="flex justify-between items-center mb-2">
                         <Link to="/" className="font-['Pacifico'] text-2xl text-custom">
-                            Exhibition Hub
+                            Bhavya Association 
                         </Link>
                         {user ? (
                             <IconButton onClick={handleMenuOpen}>
@@ -61,7 +61,7 @@ const Header = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <Link to="/" className="font-['Pacifico'] text-2xl text-custom">
-                            Exhibition Hub
+                            Bhavya Association
                         </Link>
                         <div className="flex items-center space-x-8">
                             <Link to="/" className="text-gray-600 hover:text-black">
@@ -104,7 +104,7 @@ const Header = () => {
                                         to="/register" 
                                         className="bg-custom text-white px-4 py-2 rounded-lg hover:bg-custom/90"
                                     >
-                                        Sign Up
+                                        Register
                                     </Link>
                                 </div>
                             )}

@@ -91,6 +91,50 @@ const eventSchema = new mongoose.Schema({
     publishedAt: {
         type: Date,
         default: null
+    },
+    // Exhibitor settings
+    allowExhibitors: {
+        type: Boolean,
+        default: false
+    },
+    exhibitorSpaceAvailable: {
+        type: Number,  // Total square meters available
+        default: 0
+    },
+    exhibitorSpaceBooked: {
+        type: Number,  // Total square meters booked
+        default: 0
+    },
+    exhibitorPricing: {
+        standard: {
+            type: Number,
+            default: 0  // Price per square meter
+        },
+        premium: {
+            type: Number,
+            default: 0
+        },
+        corner: {
+            type: Number,
+            default: 0
+        }
+    },
+    exhibitorDeadline: {
+        type: Date
+    },
+    exhibitorSetupDate: {
+        type: Date
+    },
+    exhibitorRequirements: {
+        type: String
+    },
+    maxExhibitors: {
+        type: Number,
+        default: 0
+    },
+    currentExhibitors: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true

@@ -11,7 +11,7 @@ const Footer = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Company Info */}
                     <div>
-                        <h3 className="font-['Pacifico'] text-2xl text-custom mb-4">Exhibition Hub</h3>
+                        <h3 className="font-['Pacifico'] text-2xl text-custom mb-4">Bhavya Association</h3>
                         <p className="text-gray-600 text-sm">
                             Your one-stop platform for discovering and booking the best exhibitions and events.
                         </p>
@@ -82,7 +82,7 @@ const Footer = () => {
                             </li>
                             <li className="flex items-center text-gray-600 text-sm">
                                 <i className="fas fa-map-marker-alt mr-2"></i>
-                                Bangalore, India
+                                Agra, India
                             </li>
                         </ul>
                     </div>
@@ -92,7 +92,7 @@ const Footer = () => {
                 <div className="border-t mt-8 pt-8">
                     <div className="flex flex-col md:flex-row justify-between items-center">
                         <p className="text-sm text-gray-600">
-                            © 2024 Exhibition Hub. All rights reserved.
+                            © 2024 DevSum IT Solutions. All rights reserved.
                         </p>
                         <div className="flex space-x-4 mt-4 md:mt-0">
                             <a href="#" className="text-gray-600 hover:text-black">
