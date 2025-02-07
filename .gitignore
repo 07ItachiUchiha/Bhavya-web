@@ -3,16 +3,58 @@ node_modules/
 /.pnp
 .pnp.js
 
-# Environment variables
+# Environment files
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.development
+.env.test
+.env.production
+backend/.env
+frontend/.env
 
-# Build files
+# Testing
+/coverage
+
+# Production
 /build
+/frontend/build
+/backend/build
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.temp
+.cache/
+
+# Debug
+.debug/
+
+# Dist
 /dist
+/frontend/dist
+/backend/dist
 
 # Debug logs
 npm-debug.log*
@@ -29,17 +71,9 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Testing
-/coverage
-
-# Production
-/frontend/build
-
 # Misc
-*.log
 *.csv
 *.dat
 *.out
-*.pid
 *.gz
 *.swp 
