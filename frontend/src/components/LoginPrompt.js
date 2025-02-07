@@ -28,7 +28,7 @@ const LoginPrompt = ({ open, onClose }) => {
         >
             <DialogTitle>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    Welcome to Exhibition Hub
+                    Welcome to Bhavya Association
                     <IconButton onClick={onClose} size="small">
                         <CloseIcon />
                     </IconButton>
@@ -51,13 +51,6 @@ const LoginPrompt = ({ open, onClose }) => {
             <DialogActions sx={{ p: 2.5, pt: 0 }}>
                 <Button onClick={onClose} color="inherit">
                     Visit Us
-                </Button>
-                <Button 
-                    onClick={() => handleNavigation('/login')} 
-                    variant="contained"
-                    color="primary"
-                >
-                    Login
                 </Button>
                 <Button 
                     onClick={() => handleNavigation('/register')}

@@ -1,10 +1,13 @@
 require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const adminRoutes = require('./routes/adminRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const authRoutes = require('./routes/authRoutes');
+const ticketRoutes = require('./routes/ticketRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -110,10 +113,26 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Add this before the API routes
+app.get('/', (req, res) => {
+    res.json({
+        status: 'success',
+        message: 'Welcome to the API',
+        version: '1.0.0',
+        endpoints: {
+            health: '/health',
+            api: '/api',
+            docs: '/api-docs'
+        }
+    });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
@@ -157,24 +176,50 @@ app.use((err, req, res, next) => {
 });
 
 // Start server with graceful shutdown
-const server = app.listen(process.env.PORT || 5000, () => {
-    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${process.env.PORT}`);
-});
+const startServer = async () => {
+    try {
+        // Connect to MongoDB
+        await connectDB();
+        console.log('MongoDB Connected Successfully');
 
-// Graceful shutdown
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
+        const server = app.listen(process.env.PORT || 5000, () => {
+            console.log(`Server running in ${process.env.NODE_ENV} mode on port ${process.env.PORT}`);
+        });
 
-async function gracefulShutdown() {
-    console.log('Received kill signal, shutting down gracefully');
-    server.close(() => {
-        console.log('Closed out remaining connections');
-        process.exit(0);
-    });
+        // Graceful shutdown
+        process.on('SIGTERM', () => gracefulShutdown(server));
+        process.on('SIGINT', () => gracefulShutdown(server));
 
-    // Force close after 10 secs
-    setTimeout(() => {
-        console.error('Could not close connections in time, forcefully shutting down');
+    } catch (error) {
+        console.error('Failed to connect to MongoDB:', error);
         process.exit(1);
-    }, 10000);
+    }
+};
+
+async function gracefulShutdown(server) {
+    console.log('Received kill signal, shutting down gracefully');
+    
+    try {
+        // Close MongoDB connection
+        await mongoose.connection.close();
+        console.log('MongoDB connection closed');
+
+        // Close Express server
+        server.close(() => {
+            console.log('Closed out remaining connections');
+            process.exit(0);
+        });
+
+        // Force close after 10 secs
+        setTimeout(() => {
+            console.error('Could not close connections in time, forcefully shutting down');
+            process.exit(1);
+        }, 10000);
+    } catch (error) {
+        console.error('Error during shutdown:', error);
+        process.exit(1);
+    }
 }
+
+// Start the server
+startServer();

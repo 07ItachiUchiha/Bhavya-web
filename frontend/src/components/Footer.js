@@ -9,9 +9,13 @@ const Footer = () => {
         <footer className="bg-white border-t mt-auto">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {/* Company Info */}
                     <div>
-                        <h3 className="font-['Pacifico'] text-2xl text-custom mb-4">Bhavya Association</h3>
+                        <Link to="/" className="flex items-center mb-4">
+                            <img src="/favicon.svg" alt="Bhavya Association Logo" className="h-25 w-40" />
+                        </Link>
+                        <h3 className="font-['Pacifico'] text-2xl text-custom mb-4">
+                            Bhavya Association
+                        </h3>
                         <p className="text-gray-600 text-sm">
                             Your one-stop platform for discovering and booking the best exhibitions and events.
                         </p>
